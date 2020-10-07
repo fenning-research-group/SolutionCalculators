@@ -996,9 +996,9 @@ class Ui_MainWindow(object):
             self.PbI2addition_2.setText(str(round(self.PbI2_soln_V_to_CsI,2)))
             self.CsI_v_2.setText(str(round(self.CsPbI_vol,2)))
 
-            print(self.PbI2_expanded_M)
-            print(self.CsI_M)
-            print(self.PrecurV_PbI2*1e6)
+            print('Real Molarity of PbI2= '+ str(round(self.PbI2_expanded_M,2)))
+            print('nominal CsI_M= '+ str(round(self.CsI_M,2)))
+            print('final volume in µL= '+ str(round(self.PrecurV_PbI2*1e6,2)))
 
 
             
@@ -1087,7 +1087,7 @@ class Ui_MainWindow(object):
                         'PbBr2_w':[self.PbBr2_w], 
                         'MABr_w':[self.MABr_w],
                         'PbBr2_d':[self.PbBr2_d],
-                        
+
                         #calculated variables MAPBr
                         'Solv_v_PbBr2':[self.Solv_v_PbBr2],
                         'Solv_w_PbBr2':[self.Solv_w_PbBr2],
@@ -1422,7 +1422,7 @@ class Ui_MainWindow(object):
         # self.arrayconfirm_HTL.setText('Array Built!')
 
         # print(self.storage)
-        print(self.HTL_storageframe)
+        # print(self.HTL_storageframe)
 
     def function_11(self): #Save stored variables to CSV
         HTL_newdata = self.HTL_storageframe
