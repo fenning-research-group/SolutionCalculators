@@ -1350,6 +1350,8 @@ class Ui_MainWindow(object):
             self.output_CsPbBr_v_mix_2 = (self.V_batch*self.halide_alloy_fraction[1]) * self.AX_molarity_difference_scaler[1]
             self.output_CsPbCl_v_mix_2 = (self.V_batch*self.halide_alloy_fraction[2]) * self.AX_molarity_difference_scaler[2]
 
+            self.final_alloy_mix = np.array([self.output_CsPbI_v_mix_2, self.output_CsPbBr_v_mix_2,  self.output_CsPbCl_v_mix_2])
+
 
             self.CsPbI_v_mix_2.setText(str(round(self.output_CsPbI_v_mix_2,2)))
             self.CsPbBr_v_mix_2.setText(str(round(self.output_CsPbBr_v_mix_2,2)))
@@ -1424,7 +1426,8 @@ class Ui_MainWindow(object):
                         'CsPbI_vol':[self.CsPbI_vol],
                         'BX2_nomM':[self.BX2_molarity_array],
                         'AX_nomM': [self.AX_molarity_array],
-                        'halide_alloy_fraction':[self.halide_alloy_fraction],
+                        'halide_alloy_final_volume_in_mix':[self.final_alloy_mix],
+                        'halide_alloy_molfraction_setting':[self.halide_alloy_fraction],
                         'BX2_nomM_setting':[self.lead_halide_nomM]
                         }
 
