@@ -1,12 +1,28 @@
-# -*- coding: utf-8 -*-
+# Deniz Cakan 
+# Last updated: 02/02/2020
 
-# Form implementation generated from reading ui file '/Users/deniz/Documents/PythonScripts/PSK_MV_Calc/PSK_MV_Calc_6.ui'
-#
-# Created by: PyQt5 UI code generator 5.9.2
-#
-# WARNING! All changes made in this file will be lost!
-
+# mods to import
+import sys, csv, os
+import numpy as np
+import pandas as pd
+import PyQt5
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QDate, QTime, QDateTime, Qt
+from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog, QLineEdit, QFileDialog
+from PyQt5.QtGui import QIcon
+import datetime
+
+# to convert designer file use following code in terminal, careful not to overwrite ! ! ! 
+# pyuic5 -x /Users/deniz/Documents/PythonScripts/PSK_MV_Calc_6.ui > /Users/deniz/Documents/PythonScripts/PSK_MV_Calc_UI.py
+# pyinstaller -w -n Calc /Users/deniz/Documents/PythonScripts/PSK_MV_Calc_4.py
+# pyinstaller --onefile /Users/deniz/Documents/PythonScripts/PSK_MV_Calc_4.py
+# if pyinstaller doesnt work use "fbs startproject" in terminal to begin the packaging
+
+# def setupUi and def retranslateUi are coded through PyDesigner software
+
+############################
+# GUI Aesthetic & Naming 
+############################
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -861,7 +877,677 @@ class Ui_MainWindow(object):
         self.label_99.setText(_translate("MainWindow", "Inorganic Settings"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), _translate("MainWindow", "Advanced Settings"))
 
+############################
+# GUI Functionality 
+############################
 
+
+############################
+# Initial Constants
+############################
+
+######### Constants to preload, not sure if float is necessary 
+
+######### PSK
+        #Density g/mL constants
+        # self.DMFDMSO_d = float(0.9596)
+        self.DMF_d = float(0.944)
+        self.DMSO_d = float(1.1)
+        self.PbI2_d = float(6.16)                
+        self.PbBr2_d = float(6.6)
+        self.PbCl2_d = float(5.85)
+
+        #Moleular weight constants
+        self.DMF_mw = float(73.09)
+        self.DMSO_mw = float(78.13)
+        self.MABr_mw = float(111.97)
+        self.FAI_mw = float(171.97)
+
+        self.PbI2_mw = float(461.01)
+        self.PbBr2_mw = float(367.01)
+        self.PbCl2_mw = float(278.1)
+
+        self.CsI_mw = float(259.81)
+        self.CsBr_mw = float(212.81)
+        self.CsCl_mw = float(168.36)
+
+
+        #Preload a date display
+        self.now = str(datetime.datetime.now()) 
+        self.datevalue.setText(str(self.now))
+        self.datevalue_2.setText(str(self.now))
+
+############################
+# Triggers
+############################
+
+######### Triggers section: Runs a defined function when signal is fired (button clicked)
+
+####### Hybrid_PSK
+        #iterate button
+        self.run_send.clicked.connect(self.function_0)
+        self.run_send.clicked.connect(self.function_1)
+        self.run_send.clicked.connect(self.function_2)
+        self.run_send.clicked.connect(self.function_3)
+        self.run_send.clicked.connect(self.function_4)
+        self.run_send.clicked.connect(self.function_5)
+        self.run_send.clicked.connect(self.function_6)
+        #save button
+        self.savebutton_send.clicked.connect(self.function_7)
+
+###### Inorganic_PSK
+        #iterate button
+        self.run_send_2.clicked.connect(self.function_0)
+        self.run_send_2.clicked.connect(self.function_12)
+        self.run_send_2.clicked.connect(self.function_13)
+        self.run_send_2.clicked.connect(self.function_14)
+        self.run_send_2.clicked.connect(self.function_21)
+        self.run_send_2.clicked.connect(self.function_15)
+
+        #save button
+        self.savebutton_send_2.clicked.connect(self.function_16)
+        self.savebutton_send_2.clicked.connect(self.function_17)
+
+
+####### HTL 
+        #iterate button
+        self.run_send_HTL.clicked.connect(self.function_8)
+        self.run_send_HTL.clicked.connect(self.function_9)
+        self.run_send_HTL.clicked.connect(self.function_10)
+        #save button
+        self.savebutton_send_HTL.clicked.connect(self.function_11)
+
+############################
+# Functions
+############################
+
+######### PSK
+    def function_0(self): #Initialize nominals & ratios
+            #FAPI solution constants
+            self.ratio = float(self.input_FAPI_MAPI_ratio.text())
+            self.IBr_ratio = float(self.input_I_Br_ratio.text())
+
+            self.PbI2_nomd = float(self.input_PbI2_nomd.text())
+            self.PbI2_nomM = float(self.input_PbI2_nomM.text()) #
+            self.FAI_nomM = float(self.input_FAI_nomM.text())
+            self.PbI2_ratio = float(self.input_PbI2_ratio.text())
+            self.FAI_ratio = float(self.input_FAI_ratio.text())
+
+            #MAPBr solution constants
+            self.PbBr2_nomd = float(self.input_PbBr2_nomd.text())
+            self.PbBr2_nomM = float(self.input_PbBr2_nomM.text()) #
+            self.MABr_nomM = float(self.input_MABr_nomM.text())
+            self.PbBr2_ratio = float(self.input_PbBr2_ratio.text())
+            self.MABr_ratio = float(self.input_MABr_ratio.text())
+            self.Solvent_ratio = float(self.input_solvent_ratio.text())
+
+            self.CsI_nomM = float(self.input_CsI_nomM.text())
+
+            self.PbCl2_nomM = float(self.input_PbCl2_nomM.text()) #
+            self.PbCl2_ratio = float(self.input_PbCl2_ratio.text())
+
+            self.halide_alloy = np.array([float(self.input_I_fraction.text()), float(self.input_Br_fraction.text()), float(self.input_Cl_fraction.text())]) #put this in advanced settings
+            self.lead_halide_nomM = np.array([self.PbI2_nomM, self.PbBr2_nomM, self.PbCl2_nomM])
+            self.halide_alloy_fraction = self.halide_alloy/np.sum(self.halide_alloy)
+
+    def function_1(self): #Initial volume calculation
+            self.Count = float(self.DeviceCount.text())
+            self.V_cell = float(self.Volumeperdevice.text())
+            self.V_batch = self.Count * self.V_cell
+            self.FAPI_final = self.V_batch * (5/6)
+            self.MAPBr_final = self.V_batch * (1/6)
+            self.V_Cs=(0.05/0.95)*self.V_batch
+            #calculate target solvent density
+
+            self.DMFDMSO_d = (self.Solvent_ratio/(self.Solvent_ratio+1))*self.DMF_d + (1)/(self.Solvent_ratio+1)*self.DMSO_d
+            #send calculated values to these fields 
+            self.totalvolumeoutput.setText(str(self.V_batch))
+            self.totalvolumeoutput_2.setText(str(self.V_batch))
+
+            self.solvent_target_output.setText(str(self.DMFDMSO_d))
+            # self.solvent_target_output_2.setText(str(self.DMFDMSO_d))
+
+            # self.initialFAPI_V.setText(str(round(self.FAPI_final,2)))
+            # self.initialMAPBr_V.setText(str(round(self.MAPBr_final,2)))
+            # self.CsI_v_mix_2.setText(str(round(self.V_Cs,2)))
+
+    def function_2(self): #FAPI calculation 
+            #store user inputs into variables
+            self.PbI2_w = float(self.PbI2weight.text())
+            self.FAI_w = float(self.FAIweight.text())
+            self.PbI2_d = float(self.PbI2deinsitycheck.text())
+            self.Solv_d = float(self.solventdensity.text())
+
+            #calculate value
+            self.Solv_v_PbI2 = (self.PbI2_w/self.PbI2_mw)/self.PbI2_nomM*1000000
+            self.Solv_w_PbI2 = (self.Solv_v_PbI2/1000)*self.Solv_d
+            self.PbI2_mol = self.PbI2_w / self.PbI2_mw
+            self.PbI2_soln_w = self.PbI2_w + self.Solv_w_PbI2
+            self.PrecurV_PbI2_display = (self.PbI2_soln_w / self.PbI2_d)*1000
+            self.PrecurV_PbI2 = (self.PbI2_soln_w / self.PbI2_d)/1000
+            self.PbI2_M = self.PbI2_mol / self.PrecurV_PbI2
+            self.FAI_mol = self.FAI_w/self.FAI_mw
+            self.PbI2_soln_V_to_FAI = 1000000*(self.FAI_mol * self.PbI2_ratio)/self.PbI2_M
+            self.Solv_addition_FAPI = ((self.FAI_mol / self.FAI_nomM) * 1000000 ) - self.PbI2_soln_V_to_FAI
+            self.FAPI_vol = self.PbI2_soln_V_to_FAI + self.Solv_addition_FAPI
+
+            #send calculated values to these fields
+            self.PbI2solventvoladdition.setText(str(round(self.Solv_v_PbI2 - 50,2))) 
+            self.PbI2addition.setText(str(round(self.PbI2_soln_V_to_FAI,2)))
+            self.PbI2solventaddition_final.setText(str(round(self.Solv_addition_FAPI,2)))
+            self.FAPI_v.setText(str(round(self.FAPI_vol,2)))
+
+    def function_3(self): #MAPBr calculation
+            self.PbBr2_w = float(self.PbBr2weight.text())
+            self.MABr_w = float(self.MABrweight.text())
+            self.PbBr2_d = float(self.PbBr2deinsitycheck.text()) 
+            # self.Solv_d = float(self.solventdensity.text())
+
+            #calculate value
+            self.Solv_v_PbBr2 = (self.PbBr2_w/self.PbBr2_mw)/self.PbBr2_nomM*1000000
+            self.Solv_w_PbBr2 = (self.Solv_v_PbBr2/1000)*self.Solv_d
+            self.PbBr2_mol = self.PbBr2_w / self.PbBr2_mw
+            self.PbBr2_soln_w = self.PbBr2_w + self.Solv_w_PbBr2
+
+            self.PrecurV_PbBr2_display = (self.PbBr2_soln_w / self.PbBr2_d)*1000
+            self.PrecurV_PbBr2 = (self.PbBr2_soln_w / self.PbBr2_d)/1000
+            self.PbBr2_M = self.PbBr2_mol / self.PrecurV_PbBr2
+            self.MABr_mol = self.MABr_w/self.MABr_mw
+            self.PbBr2_soln_V_to_MABr = 1000000*(self.MABr_mol * self.PbBr2_ratio)/self.PbBr2_M
+            self.Solv_addition_MAPBr = ((self.MABr_mol / self.MABr_nomM) * 1000000 ) - self.PbBr2_soln_V_to_MABr
+            self.MAPBr_vol = self.PbBr2_soln_V_to_MABr + self.Solv_addition_MAPBr
+
+            #send calculated values to these fields
+            self.PbBr2solventvoladdition.setText(str(round(self.Solv_v_PbBr2 - 50,2))) 
+            self.PbBr2addition.setText(str(round(self.PbBr2_soln_V_to_MABr,2)))
+            self.PbBr2solventaddition_final.setText(str(round(self.Solv_addition_MAPBr,2)))
+            self.MAPBr_v.setText(str(round(self.MAPBr_vol,2)))
+
+    def function_4(self): #Total solvent calculation
+            #user input
+            self.solv_density = float(self.solventdensity.text())
+
+            #calculate a value
+            self.totalsolv_vol = self.Solv_addition_FAPI + self.Solv_v_PbI2 + self.Solv_addition_MAPBr + self.Solv_v_PbBr2
+
+            #send calculated value to these fields
+            self.solventtotalvolume.setText(str(round(self.totalsolv_vol,2)))
+
+    def function_5(self): #Solution optimizer
+            if self.MAPBr_vol * self.ratio < self.FAPI_vol:
+                self.maxFAPI_vol = self.MAPBr_vol * self.ratio
+                self.maxMAPBr_vol = self.MAPBr_vol
+            
+            if self.MAPBr_vol * self.ratio > self.FAPI_vol:
+                self.maxFAPI_vol = self.FAPI_vol
+                self.maxMAPBr_vol = self.maxFAPI_vol / self.ratio
+
+
+            self.FAPI_v_mix.setText(str(round(self.maxFAPI_vol,2)))
+            self.MAPBr_v_mix.setText(str(round(self.maxMAPBr_vol,2)))
+            self.V_Cs_mix=(0.05/0.95) * (self.maxFAPI_vol + self.maxMAPBr_vol)
+            self.CsI_v_mix.setText(str(round(self.V_Cs_mix,2)))
+            self.PSK_total_vol = self.V_Cs_mix + self.maxMAPBr_vol + self.maxFAPI_vol
+            self.DeviceCnt_final = self.PSK_total_vol / self.V_cell
+            self.DeviceCount_final.setText(str(round(self.DeviceCnt_final,2)))
+
+    def function_6(self, fineName): #Store variables to dataframe
+        #variables in data frame format
+        self.storage = {'Date':[self.now],
+                        'Count':[self.Count], 
+                        'V_cell uL':[self.V_cell],
+                        'Solv_d g/mL':[self.Solv_d],
+                        'totalsolv_vol':[self.totalsolv_vol],
+                                #user inputs FAPI
+                        'PbI2_w g':[self.PbI2_w], 
+                        'FAI_w':[self.FAI_w],
+                        'PbI2_d':[self.PbI2_d],
+                                #calculated variables FAPI
+                        'Solv_v_PbI2':[self.Solv_v_PbI2],
+                        'Solv_w_PbI2':[self.Solv_w_PbI2],
+                        'PbI2_mol':[self.PbI2_mol],
+                        'PbI2_soln_w':[self.PbI2_soln_w],
+                        'PrecurV_PbI2_display':[self.PrecurV_PbI2_display],
+                        'PrecurV_PbI2':[self.PrecurV_PbI2],
+                        'PbI2_M':[self.PbI2_M],
+                        'FAI_mol':[self.FAI_mol],
+                        'PbI2_soln_V_to_FAI':[self.PbI2_soln_V_to_FAI],
+                        'Solv_addition_FAPI':[self.Solv_addition_FAPI],
+                        'FAPI_vol':[self.FAPI_vol],
+                                
+                                #user inputs MAPBr
+                        'PbBr2_w':[self.PbBr2_w], 
+                        'MABr_w':[self.MABr_w],
+                        'PbBr2_d':[self.PbBr2_d],
+                        #calculated variables MAPBr
+                        'Solv_v_PbBr2':[self.Solv_v_PbBr2],
+                        'Solv_w_PbBr2':[self.Solv_w_PbBr2],
+                        'PbBr2_mol':[self.PbBr2_mol],
+                        'PbBr2_soln_w':[self.PbBr2_soln_w], 
+                        'PrecurV_PbBr2_display':[self.PrecurV_PbBr2_display],
+                        'PrecurV_PbBr2':[self.PrecurV_PbBr2],
+                        'PbBr2_M':[self.PbBr2_M],
+                        'MABr_mol':[self.MABr_mol],
+                        'PbBr2_soln_V_to_MABr':[self.PbBr2_soln_V_to_MABr],
+                        'Solv_addition_MAPBr':[self.Solv_addition_MAPBr],
+                        'MAPBr_vol':[self.MAPBr_vol],
+
+                        #solution optimizer values
+                        'maxFAPI_vol':[self.maxFAPI_vol],
+                        'maxMAPBr_vol':[self.maxMAPBr_vol],
+                        'V_Cs_mix':[self.V_Cs_mix],
+                        'DeviceCnt_final':[self.DeviceCnt_final],
+                        # constants
+                        #Density g/mL constants
+                        'DMFDMSO_d':[self.DMFDMSO_d],
+                        'DMF_d':[self.DMF_d],
+                        'DMSO_d':[self.DMSO_d],
+                        'PbI2_d':[self.PbI2_d],
+                        'PbBr2_d':[self.PbBr2_d],
+
+                        #Moleular weight constants
+                        'DMF_mw':[self.DMF_mw],
+                        'DMSO_mw':[self.DMSO_mw],
+                        'PbI2_mw':[self.PbI2_mw],
+                        'MABr_mw':[self.MABr_mw],
+                        'CsI_mw':[self.CsI_mw],
+                        'FAI_mw':[self.FAI_mw],
+                        'PbBr2_mw':[self.PbBr2_mw],
+
+                        #FAPI solution constants
+                        'PbI2_nomd':[self.PbI2_nomd],
+                        'PbI2_nomM':[self.PbI2_nomM],
+                        'FAI_nomM':[self.FAI_nomM],
+                        'PbI2_ratio':[self.PbI2_ratio],
+                        'FAI_ratio':[self.FAI_ratio],
+
+                        #MAPBr solution constants
+                        'PbBr2_nomd':[self.PbBr2_nomd],
+                        'PbBr2_nomM':[self.PbBr2_nomM],
+                        'MABr_nomM':[self.MABr_nomM],
+                        'PbBr2_ratio':[self.PbBr2_ratio],
+                        'MABr_ratio':[self.MABr_ratio],
+                        'FAPI_MAPI_ratio':[self.ratio]}
+
+        self.storageframe = pd.DataFrame(self.storage)
+        # self.arrayconfirm.setText('Array Built!')
+
+        # print(self.storage)
+        # print(self.storageframe)
+
+    def function_7(self): #Saving data to csv
+        newdata = self.storageframe
+        #if the file doenst exist yet include headers, if not exdlude
+        with open('PSK_MV_Calc_Data.csv', 'a') as f:
+
+            if f.tell() == 0:
+                newdata.to_csv(f, header=True)
+
+            else:
+                newdata.to_csv(f, header=False)
+
+        #for troubleshooting: this counts the number of rows in csv
+        with open('PSK_MV_Calc_Data.csv', 'r') as f:
+            row_count = sum(1 for row in f) - 1       
+
+
+        date = self.date_input.text() 
+        solutiontype = self.solutiontype_input.text()
+        usernote = self.note_input.text()
+        filename = '{0}_{1}_{2}.csv'.format(date, solutiontype, usernote)
+
+        with open(filename, 'a') as f:
+            if f.tell() == 0:
+                newdata.to_csv(f, header=True)
+
+            else:
+                newdata.to_csv(f, header=False)
+
+
+        self.savepath.setText(str(row_count) + ' Entries in document!')
+
+######### Inorganic_PSK
+    def function_12(self): #Initial volume calculation
+            self.DMFDMSO_d = (self.Solvent_ratio/(self.Solvent_ratio+1))*self.DMF_d + (1)/(self.Solvent_ratio+1)*self.DMSO_d
+            self.Count = float(self.DeviceCount_2.text())
+            self.V_cell = float(self.Volumeperdevice_2.text())
+            self.V_batch = self.Count * self.V_cell
+
+            #send calculated values to these fields 
+            self.totalvolumeoutput_2.setText(str(self.V_batch))
+            # self.solvent_target_output_2.setText(str(self.DMFDMSO_d))    
+
+    def function_13(self): # PbI2 solvent calculation
+            #store user inputs into variables
+            self.PbI2_w = float(self.PbI2weight_2.text())
+            self.CsI_w = float(self.CsIweight_2.text()) 
+            self.PbI2_d = float(self.PbI2deinsitycheck_2.text())
+            self.Solv_d_I = float(self.solventdensity_I.text())
+
+            #calculate value
+            self.CsI_mol = self.CsI_w/self.CsI_mw
+            self.PbI2_mol = self.PbI2_w / self.PbI2_mw
+            self.Solv_v_PbI2_variable = (self.PbI2_mol)/self.PbI2_nomM  # solvent V add to PbI2 in Liter
+            self.Solv_v_PbI2_display = (self.PbI2_mol)/self.PbI2_nomM*1000000 # solvent V add to PbI2 in µL
+            self.Solv_w_PbI2 = self.Solv_d_I*1000 * self.Solv_v_PbI2_variable #weight of the solvent in gram
+            self.PbI2_soln_w = self.PbI2_w + self.Solv_w_PbI2 # weight of solvent + weight of powder
+            self.PrecurV_PbI2 = (self.PbI2_soln_w / self.PbI2_d)/1000 # Solution volume in L
+            self.PbI2_expanded_M =  self.PbI2_mol   / self.PrecurV_PbI2 # new concentration will be lower in mol/L
+            self.PbI2_soln_V_to_CsI = 1000000*(self.CsI_mol * self.PbI2_ratio)/self.PbI2_expanded_M #in µL
+
+            # I dont understand purpose of this line:
+            # self.Solv_addition_CsI = ((self.CsI_mol / self.CsI_nomM) * 1000000 ) - self.PbI2_soln_V_to_CsI
+            # self.PbI2solventaddition_final_2.setText(str(round(self.Solv_addition_CsI,2)))
+
+            self.CsI_M = self.CsI_mol/self.PbI2_soln_V_to_CsI*1000000
+            self.CsPbI_vol = self.PbI2_soln_V_to_CsI #+ self.Solv_addition_CsI
+
+            #send calculated values to these fields
+            self.PbI2solventvoladdition_2.setText(str(round(self.Solv_v_PbI2_display,2)))
+            self.PbI2addition_2.setText(str(round(self.PbI2_soln_V_to_CsI,2)))
+            self.CsPbI3_final_volume.setText(str(round(self.CsPbI_vol,2)))
+
+            # print('Real Molarity of PbI2= '+ str(round(self.PbI2_expanded_M,2)))
+            # print('Nominal CsI_M= '+ str(round(self.CsI_M,2)))
+            # print('expanded volume of the Lead-Halide µL= '+ str(round(self.PrecurV_PbI2*1e6,2)))
+            
+
+    def function_14(self): # PbBr2 solvent calculation 
+            #store user inputs into variables
+            self.PbBr2_w = float(self.PbBr2weight_2.text())
+            self.CsBr_w = float(self.CsBrweight_2.text()) 
+            self.PbBr2_d = float(self.PbBr2deinsitycheck_2.text())
+            self.Solv_d_Br = float(self.solventdensity_Br.text())
+
+            #calculate value
+            self.CsBr_mol = self.CsBr_w / self.CsBr_mw
+            self.PbBr2_mol = self.PbBr2_w / self.PbBr2_mw
+            self.Solv_v_PbBr2_variable = (self.PbBr2_mol)/self.PbBr2_nomM  # solvent V add to PbBr2 in Liter
+            self.Solv_v_PbBr2_display = (self.PbBr2_mol)/self.PbBr2_nomM*1000000 # solvent V add to PbBr2 in µL
+            self.Solv_w_PbBr2 = self.Solv_d_Br*1000 * self.Solv_v_PbBr2_variable #weight of the solvent in gram
+            self.PbBr2_soln_w = self.PbBr2_w + self.Solv_w_PbBr2 # weight of solvent + weight of powder
+            self.PrecurV_PbBr2 = (self.PbBr2_soln_w / self.PbBr2_d)/1000 # Solution volume in L
+            self.PbBr2_expanded_M =  self.PbBr2_mol   / self.PrecurV_PbBr2 # new concentration will be lower in mol/L
+            self.PbBr2_soln_V_to_CsI = 1000000*(self.CsBr_mol * self.PbBr2_ratio)/self.PbBr2_expanded_M #in µL
+
+            # Br dont understand purpose of this line:
+            # self.Solv_addition_CsBr = ((self.CsBr_mol / self.CsBr_nomM) * 1000000 ) - self.PbBr2_soln_V_to_CsBr
+            # self.PbBr2solventaddition_final_2.setText(str(round(self.Solv_addition_CsBr,2)))
+
+            self.CsBr_M = self.CsBr_mol/self.PbBr2_soln_V_to_CsI*1000000
+            self.CsPbBr_vol = self.PbBr2_soln_V_to_CsI #+ self.Solv_addition_CsBr
+
+            #send calculated values to these fields
+            self.PbBr2solventvoladdition_2.setText(str(round(self.Solv_v_PbBr2_display,2)))
+            self.PbBr2addition_2.setText(str(round(self.PbBr2_soln_V_to_CsI,2)))
+            self.CsPbBr3_final_volume.setText(str(round(self.CsPbBr_vol,2)))
+
+
+            # print('Real Molarity of PbBr2= '+ str(round(self.PbBr2_expanded_M,2)))
+            # print('Nominal CsBr_M= '+ str(round(self.CsBr_M,2)))
+            # print('expanded volume of the Lead-Halide µL= '+ str(round(self.PrecurV_PbBr2*1e6,2)))
+
+    def function_21(self): # PbCl2 solvent calculation 
+            #store user inputs into variables
+            self.PbCl2_w = float(self.PbCl2weight_2.text())
+            self.CsCl_w = float(self.CsClweight_2.text()) 
+            self.PbCl2_d = float(self.PbCl2deinsitycheck_2.text())
+            self.Solv_d_Cl = float(self.solventdensity_Cl.text())
+
+            #calculate value
+            self.CsCl_mol = self.CsCl_w/self.CsCl_mw
+            self.PbCl2_mol = self.PbCl2_w / self.PbCl2_mw
+            self.Solv_v_PbCl2_variable = (self.PbCl2_mol)/self.PbCl2_nomM  # solvent V add to PbBr2 in Liter
+            self.Solv_v_PbCl2_display = (self.PbCl2_mol)/self.PbCl2_nomM*1000000 # solvent V add to PbBr2 in µL
+            self.Solv_w_PbCl2 = self.Solv_d_Cl*1000 * self.Solv_v_PbCl2_variable #weight of the solvent in gram
+            self.PbCl2_soln_w = self.PbCl2_w + self.Solv_w_PbCl2 # weight of solvent + weight of powder
+            self.PrecurV_PbCl2 = (self.PbCl2_soln_w / self.PbCl2_d)/1000 # Solution volume in L
+            self.PbCl2_expanded_M =  self.PbCl2_mol  / self.PrecurV_PbCl2 # new concentration will be lower in mol/L
+            self.PbCl2_soln_V_to_CsCl = 1000000*(self.CsCl_mol * self.PbCl2_ratio)/self.PbCl2_expanded_M #in µL
+
+            # Br dont understand purpose of this line:
+            # self.Solv_addition_CsBr = ((self.CsBr_mol / self.CsBr_nomM) * 1000000 ) - self.PbBr2_soln_V_to_CsBr
+            # self.PbBr2solventaddition_final_2.setText(str(round(self.Solv_addition_CsBr,2)))
+
+            self.CsCl_M = self.CsCl_mol/self.PbCl2_soln_V_to_CsCl*1000000
+            self.CsPbCl_vol = self.PbCl2_soln_V_to_CsCl #+ self.Solv_addition_CsBr
+
+            #send calculated values to these fields
+            self.PbCl2solventvoladdition_2.setText(str(round(self.Solv_v_PbCl2_display,2)))
+            self.PbCl2addition_2.setText(str(round(self.PbCl2_soln_V_to_CsCl,2)))
+            self.CsPbCl3_total_volume.setText(str(round(self.CsPbCl_vol,2)))
+
+
+            # print('Real Molarity of PbCl2= '+ str(round(self.PbCl2_expanded_M,2)))
+            # print('Nominal CsCl_M= '+ str(round(self.CsCl_M,2)))
+            # print('expanded volume of the Lead-Halide µL= '+ str(round(self.PrecurV_PbCl2*1e6,2)))
+
+    def function_15(self): #Solution optimizer
+            print('Volume batch ='+ str(self.V_batch)) 
+            self.totalsolv_vol_2 = self.Solv_v_PbI2_display + self.Solv_v_PbBr2_display + self.Solv_v_PbCl2_display
+
+            self.solventtotalvolume_2.setText(str(round(self.totalsolv_vol_2/1000,1)))
+
+            self.volume_array = np.array([self.CsPbI_vol, self.CsPbBr_vol, self.CsPbCl_vol])
+            print('Volume array ='+ str(self.volume_array)) 
+
+            self.BX2_molarity_array = np.array([self.PbI2_expanded_M, self.PbBr2_expanded_M,  self.PbCl2_expanded_M])
+
+            self.AX_molarity_array = np.array([self.CsI_M, self.CsBr_M, self.CsCl_M])
+            self.AX_largest_M = max(self.AX_molarity_array)
+            self.AX_molarity_difference_scaler = self.AX_largest_M/ self.AX_molarity_array # this is the adjustment required to volume in order for the volume ratio to be applied
+
+            print('BX2_Molarity ='+ str(self.BX2_molarity_array)) 
+
+            print('AX_Molarity ='+ str(self.AX_molarity_array)) 
+            print('Scaler on M ='+ str(self.AX_molarity_difference_scaler)) 
+
+            # self.halide_ratio = min(self.halide_alloy)
+            print('halide fraction ='+ str(self.halide_alloy_fraction)) 
+
+            # take the mol fraction, adjust per volume to be equalmolar, now we can use the mol fraction as if it was volume fraction, since the per volume is now equimolar. 
+            self.output_CsPbI_v_mix_2  = (self.V_batch*self.halide_alloy_fraction[0]) * self.AX_molarity_difference_scaler[0]
+            self.output_CsPbBr_v_mix_2 = (self.V_batch*self.halide_alloy_fraction[1]) * self.AX_molarity_difference_scaler[1]
+            self.output_CsPbCl_v_mix_2 = (self.V_batch*self.halide_alloy_fraction[2]) * self.AX_molarity_difference_scaler[2]
+
+
+            self.CsPbI_v_mix_2.setText(str(round(self.output_CsPbI_v_mix_2,2)))
+            self.CsPbBr_v_mix_2.setText(str(round(self.output_CsPbBr_v_mix_2,2)))
+            self.CsPbCl_v_mix_2.setText(str(round(self.output_CsPbCl_v_mix_2,2)))
+
+            # if self.CsPbBr_vol*self.molarity_array[1] * self.IBr_ratio < self.CsPbI_vol:
+            #     self.maxCsPbI_vol = self.CsPbBr_vol*self.molarity_array[1] * self.IBr_ratio
+            #     self.maxCsPbBr_vol = self.CsPbBr_vol*self.molarity_array[1]
+            
+            # if self.CsPbBr_vol*self.molarity_array[1] * self.IBr_ratio > self.CsPbI_vol*self.molarity_array[0]:
+            #     self.maxCsPbI_vol = self.CsPbI_vol*self.molarity_array[0]
+            #     self.maxCsPbBr_vol = self.maxCsPbI_vol / self.IBr_ratio
+
+
+
+
+            # keep for adding MACl Later on
+            # self.V_Cs_mix=(0.05/0.95) * (self.maxFAPI_vol + self.maxMAPBr_vol)
+            # self.CsI_v_mix.setText(str(round(self.V_Cs_mix,2)))
+
+            # self.PSK_total_vol_2 = self.maxCsPbBr_vol + self.maxCsPbI_vol
+            # self.DeviceCnt_final_2 = self.PSK_total_vol_2 / self.V_cell
+            # self.DeviceCount_final_2.setText(str(round(self.DeviceCnt_final_2,2)))
+
+            # need to scale the volumes by the difference in the molarity, 
+            
+
+
+
+
+
+
+            # need to change vol ratio to mol ratio based on nominal Molarity of CsX, 
+
+
+    def function_16(self, fineName): #Store variables to dataframe
+        #variables in data frame format
+        self.storage = {'Date':[self.now],
+                        'Count':[self.Count], 
+                        'V_cell uL':[self.V_cell],
+
+                        #solvent density
+                        'CsPbI3 Solv_d g/mL':[self.Solv_d_I],
+                        'CsPbBr3 Solv_d g/mL':[self.Solv_d_Br],
+                        'CsPbCl3 Solv_d g/mL':[self.Solv_d_Cl],
+                        'totalsolv_vol':[self.totalsolv_vol_2],
+
+                        #input weights
+                        'PbI2_w g':[self.PbI2_w], 
+                        'PbBr2_w g':[self.PbBr2_w],
+                        'PbCl2_w g':[self.PbCl2_w],
+
+                        'CsI_w g':[self.CsI_w], 
+                        'CsBr_w g':[self.CsBr_w], 
+                        'CsCl_w g':[self.CsCl_w], 
+
+                        #density checks
+                        'PbI2_d':[self.PbI2_d],
+                        'PbBr2_d':[self.PbBr2_d],
+                        'PbCl2_d':[self.PbCl2_d],
+
+                        #solvent additions
+                        'CsI_mol':[self.CsI_mol],
+                        'PbI2_mol':[self.PbI2_mol],
+                        'Solv_v_PbI2_variable':[self.Solv_v_PbI2_variable],
+                        'Solv_w_PbI2':[self.Solv_w_PbI2],
+                        'PbI2_soln_w':[self.PbI2_soln_w],
+                        'PrecurV_PbI2':[self.PrecurV_PbI2],
+                        'PbI2_expanded_M':[self.PbI2_expanded_M],
+                        'PbI2_soln_V_to_CsI':[self.PbI2_soln_V_to_CsI],
+                        'CsI_M':[self.CsI_M],
+                        'CsPbI_vol':[self.CsPbI_vol],
+                        'BX2_nomM':[self.BX2_molarity_array],
+                        'AX_nomM': [self.AX_molarity_array],
+                        'halide_alloy_fraction':[self.halide_alloy_fraction],
+                        'BX2_nomM_setting':[self.lead_halide_nomM]
+                        }
+
+        self.storageframe = pd.DataFrame(self.storage)
+
+    def function_17(self): #Saving data to csv
+        newdata = self.storageframe
+        #if the file doenst exist yet include headers, if not exdlude
+        with open('inorganicPSK_MV_Calc_Data.csv', 'a') as f:
+
+            if f.tell() == 0:
+                newdata.to_csv(f, header=True)
+
+            else:
+                newdata.to_csv(f, header=False)
+
+        #for troubleshooting: this counts the number of rows in csv
+        with open('inorganicPSK_MV_Calc_Data.csv', 'r') as f:
+            row_count = sum(1 for row in f) - 1       
+
+
+        date = self.date_input_2.text() 
+        solutiontype = self.solutiontype_input_2.text()
+        usernote = self.note_input_2.text()
+        filename = '{0}_{1}_{2}.csv'.format(date, solutiontype, usernote)
+
+        with open(filename, 'a') as f:
+            if f.tell() == 0:
+                newdata.to_csv(f, header=True)
+
+            else:
+                newdata.to_csv(f, header=False)
+
+
+        self.savepath.setText(str(row_count) + ' Entries in document!')
+    
+######### HTL
+
+    def function_8(self): #HTL Volume required
+            # input batch detail
+            self.var_HTL_Count = float(self.input_HTL_Device_Count.text())
+            self.var_HTL_vperdevice = float(self.input_HTL_vperdevice.text())
+
+            # calculate volume required
+            self.var_HTL_V_batch = self.var_HTL_Count * self.var_HTL_vperdevice
+
+            #send to display
+            self.display_HT_V_required.setText(str(round(self.var_HTL_V_batch,2)))
+
+    def function_9(self): #HTL Volume of solution
+            #recipe to scale off of
+            self.var_Spiro_weight_scaler = 0.08
+            self.var_CB_v_scaler = 1000
+            self.var_LiTFSI_scaler = 17.7
+            self.var_TBP_scaler = 24.4
+
+            self.var_Spiro_weight = float(self.input_Spiro_weight.text())
+            self.var_CB_v_scaled = (self.var_Spiro_weight / self.var_Spiro_weight_scaler) * self.var_CB_v_scaler
+            self.var_LiTFSI_scaled = (self.var_Spiro_weight / self.var_Spiro_weight_scaler) * self.var_LiTFSI_scaler
+            self.var_TBP_scaled = (self.var_Spiro_weight / self.var_Spiro_weight_scaler) * self.var_TBP_scaler
+
+            self.var_HTL_soln_final = self.var_CB_v_scaled + self.var_LiTFSI_scaler + self.var_TBP_scaled 
+
+            # sending calculated values to display fields
+            self.display_HTL_CB_V.setText(str(round(self.var_CB_v_scaled,2)))
+            self.display_HTL_LiTFSI_V.setText(str(round(self.var_LiTFSI_scaled,2)))
+            self.display_HTL_TBP_V.setText(str(round(self.var_TBP_scaled,2)))
+            self.display_HTL_soln_final.setText(str(round(self.var_HTL_soln_final,2)))
+
+    def function_10(self, fineName): #Store variables to dataframe
+        #variables in data frame format
+        self.HTL_storage = {'Date':[self.now],
+                        'Count':[self.var_HTL_Count], 
+                        'V/Device':[self.var_HTL_vperdevice], 
+                        'var_HTL_V_batch':[self.var_HTL_V_batch], 
+                        'var_Spiro_weight_scaler':[self.var_Spiro_weight_scaler], 
+                        'var_CB_v_scaler':[self.var_CB_v_scaler], 
+                        'var_LiTFSI_scaler':[self.var_LiTFSI_scaler], 
+                        'var_TBP_scaler':[self.var_TBP_scaler], 
+                        'var_Spiro_weight':[self.var_Spiro_weight], 
+                        'var_CB_v_scaled':[self.var_CB_v_scaled], 
+                        'var_LiTFSI_scaled':[self.var_LiTFSI_scaled], 
+                        'var_TBP_scaled':[self.var_TBP_scaled],
+                        'var_HTL_soln_final':[self.var_HTL_soln_final]}
+
+        self.HTL_storageframe = pd.DataFrame(self.HTL_storage)
+        # self.arrayconfirm_HTL.setText('Array Built!')
+
+        # print(self.storage)
+        # print(self.HTL_storageframe)
+
+    def function_11(self): #Save stored variables to CSV
+        HTL_newdata = self.HTL_storageframe
+        #if the file doenst exist yet include headers, if not exdlude
+        with open('HTL_MV_Calc_Data.csv', 'a') as f:
+
+            if f.tell() == 0:
+                HTL_newdata.to_csv(f, header=True)
+
+            else:
+                HTL_newdata.to_csv(f, header=False)
+
+        #for troubleshooting: this counts the number of rows in csv
+        with open('HTL_MV_Calc_Data.csv', 'r') as f:
+            row_count = sum(1 for row in f) - 1       
+
+
+        date = self.date_input_HTL.text() 
+        solutiontype = self.solutiontype_input_HTL.text()
+        usernote = self.note_input_HTL.text()
+        filename = '{0}_{1}_{2}.csv'.format(date, solutiontype, usernote)
+
+        with open(filename, 'a') as f:
+            if f.tell() == 0:
+                HTL_newdata.to_csv(f, header=True)
+
+            else:
+                HTL_newdata.to_csv(f, header=False)
+
+
+        self.savepath_HTL.setText(str(row_count) + ' Entries in document!')
+
+######### GUI exiting protocol, (to prevent system error on close)
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
@@ -870,4 +1556,3 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-
