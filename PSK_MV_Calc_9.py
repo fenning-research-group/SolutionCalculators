@@ -1323,27 +1323,26 @@ class Ui_MainWindow(object):
             # print('expanded volume of the Lead-Halide µL= '+ str(round(self.PrecurV_PbCl2*1e6,2)))
 
     def function_15(self): #Solution optimizer
-            print('Volume batch ='+ str(self.V_batch)) 
+            # print('Volume batch ='+ str(self.V_batch)) 
             self.totalsolv_vol_2 = self.Solv_v_PbI2_display + self.Solv_v_PbBr2_display + self.Solv_v_PbCl2_display
 
             self.solventtotalvolume_2.setText(str(round(self.totalsolv_vol_2/1000,1)))
 
             self.volume_array = np.array([self.CsPbI_vol, self.CsPbBr_vol, self.CsPbCl_vol])
-            print('Volume array ='+ str(self.volume_array)) 
+            # print('Volume array ='+ str(self.volume_array)) 
 
             self.BX2_molarity_array = np.array([self.PbI2_expanded_M, self.PbBr2_expanded_M,  self.PbCl2_expanded_M])
 
             self.AX_molarity_array = np.array([self.CsI_M, self.CsBr_M, self.CsCl_M])
             self.AX_largest_M = max(self.AX_molarity_array)
             self.AX_molarity_difference_scaler = self.AX_largest_M/ self.AX_molarity_array # this is the adjustment required to volume in order for the volume ratio to be applied
-
+            
+            print('X3 mol fraction ='+ str(self.halide_alloy_fraction)) 
             print('BX2_Molarity ='+ str(self.BX2_molarity_array)) 
-
             print('AX_Molarity ='+ str(self.AX_molarity_array)) 
-            print('Scaler on M ='+ str(self.AX_molarity_difference_scaler)) 
+            # print('Scaler on M ='+ str(self.AX_molarity_difference_scaler)) 
 
             # self.halide_ratio = min(self.halide_alloy)
-            print('halide fraction ='+ str(self.halide_alloy_fraction)) 
 
             # take the mol fraction, adjust per volume to be equalmolar, now we can use the mol fraction as if it was volume fraction, since the per volume is now equimolar. 
             self.output_CsPbI_v_mix_2  = (self.V_batch*self.halide_alloy_fraction[0]) * self.AX_molarity_difference_scaler[0]
